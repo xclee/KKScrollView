@@ -10,42 +10,25 @@
 
 @protocol KKScrollViewDelegate;
 
-@interface KKScrollView : UIView <UIScrollViewDelegate>{
+@interface KKScrollView : UIView <UIScrollViewDelegate> {
 
-    id <KKScrollViewDelegate>_delegate;
-    
-    UIScrollView *_scrollView;
-    int          _pageCnt;
-    int         lowBoundsPage;
-    int         highBoundsPage;
-    int         _currPageIdx;
-    
-    NSMutableSet *_onScreenPages;
-    NSMutableSet *_offScreenPages;
-    CGSize      _pageSize;//when not use pageEnabled ,pageSize must init
-    BOOL        _pageEnabled;//if you use pageEnabled, pageSize must zero
-    CGFloat     _colGap;
-    UIEdgeInsets    _contentInsets;
-    UIImageView *_backgroundView;
 }
 
 @property (nonatomic, assign) id <KKScrollViewDelegate>delegate;
 
-@property (assign, readonly) int lowBoundsPage;
-@property (assign, readonly) int hightBoundsPage;
-@property (nonatomic, assign) int currPageIdx;
+@property (nonatomic, assign) NSInteger currPageIdx;
 @property (nonatomic, assign) CGSize pageSize;
 @property (nonatomic, assign) BOOL pageEnabled;
-@property (nonatomic, assign) CGFloat colGap;
+@property (nonatomic, assign) CGFloat colGap; //default is zero
 @property (nonatomic, assign) UIEdgeInsets contentInsets;
 @property (nonatomic, assign) UIImage *backgroundImage;
-@property (nonatomic, assign) BOOL isCycle;//if is cycle scrollview
+@property (nonatomic, assign) BOOL isCycle;//if is yes, cycle scrollview
 
 - (UIView *)dequeueReusablePage;
 - (UIScrollView*)scrollView;
 - (UIView *)viewForPageAtIndex:(NSUInteger)index;
 
-- (void)reloadPageInView:(KKScrollView*)scrollView atIndex:(int)aIndex;
+- (void)reloadPageInView:(KKScrollView*)scrollView atIndex:(NSInteger)aIndex;
 - (void)reloadData;
 
 @end
@@ -54,14 +37,14 @@
 
 @required
 
-- (UIView*)viewForIndexInView:(KKScrollView*)scrollView index:(int)index;
+- (UIView*)viewForIndexInView:(KKScrollView*)scrollView index:(NSInteger)index;
 - (int)numberOfPagesInView:(KKScrollView*)scrollView;
 
 @optional
 
-- (void)didClickedPagesInView:(KKScrollView*)scrollView atIndex:(int)aIndex;
-- (void)didScrolledInView:(KKScrollView*)scrollView atIndex:(int)aIndex;
-- (void)didScrolledEndInView:(KKScrollView*)scrollView atIndex:(int)aIndex;
+- (void)didClickedPagesInView:(KKScrollView*)scrollView atIndex:(NSInteger)aIndex;
+- (void)didScrolledInView:(KKScrollView*)scrollView atIndex:(NSInteger)aIndex;
+- (void)didScrolledEndInView:(KKScrollView*)scrollView atIndex:(NSInteger)aIndex;
 
 - (void)didSwipeOutOfPage;
 

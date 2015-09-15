@@ -10,8 +10,25 @@
 
 @interface KKScrollView ()
 {
+    id <KKScrollViewDelegate>_delegate;
     UIPageControl *_pageControl;
+    
+    UIScrollView *_scrollView;
+    NSInteger  _pageCnt;
+    NSInteger  lowBoundsPage;
+    NSInteger  highBoundsPage;
+    NSInteger  _currPageIdx;
+    NSMutableSet *_onScreenPages;
+    NSMutableSet *_offScreenPages;
+    CGSize  _pageSize;//when not use pageEnabled ,pageSize must init
+    BOOL  _pageEnabled;//if you use pageEnabled, pageSize must zero
+    CGFloat  _colGap;
+    UIEdgeInsets  _contentInsets;
+    UIImageView *_backgroundView;
 }
+
+@property (assign, readonly) NSInteger lowBoundsPage;
+@property (assign, readonly) NSInteger hightBoundsPage;
 
 - (void)configurePages;
 
@@ -119,8 +136,8 @@ const int preloadCount = 3;
     return self;
 }
 
-- (void)dealloc{
-    
+- (void)dealloc
+{
     [_onScreenPages release];
     _onScreenPages = nil;
     [_offScreenPages release];
@@ -192,7 +209,7 @@ const int preloadCount = 3;
     return nil;
 }
 
-- (void)reloadPage:(UIView*)page AtIndex:(int)index
+- (void)reloadPage:(UIView*)page AtIndex:(NSInteger)index
 {
     page.tag = index;
     CGSize pageSizes = self.bounds.size;
@@ -206,7 +223,7 @@ const int preloadCount = 3;
     [page setNeedsDisplay];
 }
 
-- (void)reloadPageInView:(KKScrollView*)scrollView atIndex:(int)aIndex
+- (void)reloadPageInView:(KKScrollView*)scrollView atIndex:(NSInteger)aIndex
 {
     UIView *view = [self viewForPageAtIndex:aIndex];
     if(view){
@@ -234,11 +251,11 @@ const int preloadCount = 3;
     if (_pageCnt < 1) {
         return;
     }
-    int newPage = [self newPageIndex];
-    int lowVisiblePage = self.lowBoundsPage;
-    int highVisiblePage  = self.hightBoundsPage;
-    int low = MAX(0,            MIN(lowVisiblePage, newPage - preloadCount));
-    int high  = MIN(_pageCnt - 1, MAX(highVisiblePage,  newPage + preloadCount));
+    NSInteger newPage = [self newPageIndex];
+    NSInteger lowVisiblePage = self.lowBoundsPage;
+    NSInteger highVisiblePage  = self.hightBoundsPage;
+    NSInteger low = MAX(0,            MIN(lowVisiblePage, newPage - preloadCount));
+    NSInteger high  = MIN(_pageCnt - 1, MAX(highVisiblePage,  newPage + preloadCount));
     
     NSMutableSet *pagesToRemove = [NSMutableSet set];
     for (UIView *page in _onScreenPages) {
@@ -252,9 +269,9 @@ const int preloadCount = 3;
         [_onScreenPages minusSet:pagesToRemove];
     
     
-    for(int i = low; i<= high; i++) {
-        int index = i;
-        int count = [_delegate numberOfPagesInView:self];
+    for(NSInteger i = low; i<= high; i++) {
+        NSInteger index = i;
+        NSInteger count = [_delegate numberOfPagesInView:self];
         if(![self viewForPageAtIndex:i]){
             if (self.isCycle) {
                 if (count > 0) {
@@ -298,7 +315,7 @@ const int preloadCount = 3;
     return MIN((lastRow + (preloadCount + 1))  - 1, _pageCnt - 1);
 }
 
-- (int)lowBoundsPage
+- (NSInteger)lowBoundsPage
 {
     if(self.pageSize.width > 0)
         return [self firstVisibleItemIndex];
@@ -307,7 +324,7 @@ const int preloadCount = 3;
     return MAX(floorf(CGRectGetMinX(visibleBounds) / CGRectGetWidth(visibleBounds)), 0);
 }
 
-- (int)hightBoundsPage
+- (NSInteger)hightBoundsPage
 {
     if(self.pageSize.width > 0)
         return [self lastVisibleItemIndex];
@@ -315,7 +332,7 @@ const int preloadCount = 3;
     return MIN(floorf((CGRectGetMaxX(visibleBounds)-1) / CGRectGetWidth(visibleBounds)), _pageCnt - 1);
 }
 
-- (void)setCurrPageIdx:(int)aPageIdx{
+- (void)setCurrPageIdx:(NSInteger)aPageIdx{
 
     if(self.pageSize.width > 0) {
          [_scrollView setContentOffset:CGPointMake(self.contentInsets.left +  self.pageSize.width * aPageIdx + aPageIdx * _colGap, 0) animated:NO];
@@ -333,8 +350,8 @@ const int preloadCount = 3;
 {
     if (self.isCycle) {
         CGFloat width = CGRectGetWidth(scrollView.frame);
-        NSInteger i = scrollView.contentOffset.x / width;
-        if ((i == 0 || i == _pageControl.numberOfPages + 1) && scrollView.isDecelerating) {
+        NSInteger pageIndex = scrollView.contentOffset.x / width;
+        if ((pageIndex == 0 || pageIndex == _pageControl.numberOfPages + 1) && scrollView.isDecelerating) {
             scrollView.scrollEnabled = NO;
             return;
         }
